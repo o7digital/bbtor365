@@ -1,0 +1,12 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const context={window:{}};
+vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../dist/assets/sample-data.js'),'utf8'),context);
+const d=context.window.GB_DATA;
+assert.equal(d.fictional,true,'Public distribution requires the independent fictional sample');
+assert.ok(d.users.every(u=>u.email.endsWith('@example.com')),'Only fictional profiles can be published');
+assert.ok(d.ap.rows.every(r=>/^DEMO/.test(r.Vendor)&&/DM$/.test(r.Number)&&/^DEMO/.test(r.Location)),'Real AP rows must remain private');
+assert.ok(d.sales.every(w=>w.rows.every(r=>r.JENumber.startsWith('DEMO ')&&r.JELocation.startsWith('DEMO'))&&w.invoices.every(r=>r.customer.startsWith('Fictional '))),'Real journal rows must remain private');
+console.log('Public sample check passed: fictional records and profiles only.');

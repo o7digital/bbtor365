@@ -1,0 +1,15 @@
+{
+  "name": "artimex-gbtor365-preview",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Interactive GBtoR365 accounting workflow preview for Artimex",
+  "scripts": {
+    "start": "python3 -m http.server 8080 --bind 127.0.0.1 --directory dist",
+    "samples": "node scripts/generate-demo.cjs",
+    "build": "npm run check:public && python3 scripts/package-preview.py",
+    "check:public": "node scripts/check-public.cjs",
+    "test": "node --test tests/core.test.cjs",
+    "test:browser": "node scripts/browser-smoke.cjs",
+    "check": "node --check dist/assets/app.js && node --check dist/assets/core.js && node --check dist/assets/xlsx-reader.js"
+  }
+}

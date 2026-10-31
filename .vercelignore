@@ -1,0 +1,10 @@
+.git
+.private
+.env*
+node_modules
+artifacts
+GBtoR365-preview.html
+tests
+docs
+scripts
+*.md

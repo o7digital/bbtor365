@@ -1,0 +1,11 @@
+node_modules/
+artifacts/
+*.tar.gz
+.DS_Store
+.env
+.env.*
+!.env.example
+.private/
+.vercel/
+GBtoR365-preview.html
+__pycache__/
