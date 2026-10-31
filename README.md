@@ -57,6 +57,8 @@ Aucun envoi à GlobalBake ou R365. Le téléchargement `PREVIEW.csv` ne prouve a
 
 ## Hébergement
 
+Démo publiée : **https://gbtor365.vercel.app**. Les sept écrans et l’affichage mobile ont été vérifiés sur cette URL.
+
 Projet Vercel distinct `gbtor365`, dossier servi : `dist/`, installation et compilation désactivées. `vercel.json` suit la [configuration officielle Vercel](https://vercel.com/docs/project-configuration/vercel-json). Publication par CLI après tests :
 
 ```sh

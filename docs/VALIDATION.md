@@ -28,3 +28,11 @@ Les captures et fichiers de revue fictifs se trouvent dans `artifacts/` et ne so
 ## Limites
 
 La vérification XLSX utilise un classeur synthétique compatible. Le classeur original de 96 feuilles et les exports bruts complets ne sont pas dans le ZIP reçu. Aucun test d’import R365 ni connexion comptable de production. Les dépendances métier et techniques sont détaillées dans `IMPLEMENTATION_PLAN.md`. Le domaine envisagé n’est pas configuré.
+
+## Déploiement vérifié
+
+Publication par `vercel deploy --prod --yes --scope olivier-steineur` sur le projet dédié `gbtor365`. URL stable : https://gbtor365.vercel.app ; déploiement `dpl_75sCK999ZUb1nJ9XctCbU1EepSYq`, état READY.
+
+Contrôle externe : page d’entrée et six assets principaux en HTTP 200 ; données servies identiques au jeu fictif local ; en-tête `X-Robots-Tag: noindex, nofollow`. Les chemins privés, `.env.local`, documents et aperçu autonome à la racine répondent 404. Les sept vues `#overview`, `#ap`, `#sales`, `#mapping`, `#activity`, `#team`, `#guide` s’ouvrent dans Chrome sans erreur JavaScript ; l’accueil mobile à 390 px ne déborde pas. Captures finales dans `artifacts/production-desktop.png` et `artifacts/production-mobile.png`.
+
+Code poussé sur `setup/gbtor365-preview` dans `o7digital/bbtor365`. Aucun autre projet Artimex ni domaine existant modifié.
