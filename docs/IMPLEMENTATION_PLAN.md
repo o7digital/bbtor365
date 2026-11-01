@@ -1,43 +1,27 @@
-# Plan d’implémentation — GBtoR365
+# Suite de l’intégration — GBtoR365
 
-La reprise conserve le prototype comptable, désormais protégé par un accès administrateur initial ; voir `AUTHENTICATION.md`. Les étapes suivantes nécessitent une validation métier et des fichiers complets ; aucune règle comptable manquante n’est déduite du mockup.
+Le dépôt CSV, les originaux immuables, les mappings versionnés, les traitements après dépôt, les contrôles, revues, approbations, fichiers cibles et l’audit sont maintenant implémentés côté serveur et stockés dans une base dédiée. Les comptes et rôles existants sont conservés. Voir `REAL_WORKFLOW_DELIVERY.md` et `OPERATIONS.md` pour la livraison et l’exploitation.
 
-## 1. Valider les parcours et réunir les sources
+## Confirmer les sources GlobalBake
 
-Faire valider les écrans et responsabilités par la revue comptable, la préparation des ventes, la supervision financière et l’administration. Les personnes proposées et leurs adresses restent dans le brief original local `.private/GBtoR365/CODEX_BRIEF.md` ; sept comptes individuels existent ; les données de comptes sont configurées dans des variables sensibles, sans base d’administration en temps réel.
+Demander à Pam, pour les achats et les ventes, le rapport exact, les options, la méthode supportée pour enregistrer un CSV et un export brut complet. Le fichier AP0001 et le G/L Transaction Report sont les références attendues. Ne pas supposer qu’un export CSV direct existe si GlobalBake exige une autre méthode.
 
-Obtenir : AP0001 brut complet ; G/L Transaction Report brut ; classeur de ventes original ; exemples R365 acceptés/rejetés ; correspondances fournisseurs, clients, comptes et localisations validées ; traitement des avoirs/corrections ; formats de date ; modalités d’export GlobalBake ; documentation des accès et capacités d’import R365, avec un environnement de test.
+Avec Rosa/Jorge et l’équipe comptable, valider fournisseurs, clients, comptes, localisations, dates, signes, exclusions, corrections/avoirs et les regroupements. Définir le traitement des en-têtes/contreparties AP0001 à partir du fichier complet, pas de captures.
 
-Livrable attendu : contrat de données versionné avec exemples et critères d’acceptation signés. La correspondance `0092 → EGG70` est bloquée jusqu’à confirmation ; les localisations comptables ne sont pas les noms des restaurants EGG.
+Configurer les modèles dans l’éditeur existant et vérifier deux fichiers successifs avec la même version. Développer un adaptateur spécifique si la structure du rapport excède les associations de colonnes, constantes, filtres, correspondances et regroupements déjà pris en charge. L’ordre des colonnes est libre ; leurs noms et codes doivent respecter le mapping.
 
-## 2. Construire le socle persistant
+## Intégrer R365 TEST
 
-Choisir l’hébergement du backend et le fournisseur d’identité après clarification des accès de l’équipe. Contrôler les droits côté serveur : préparation, revue/export, supervision et administration. Définir les droits exacts et l’éventuelle séparation préparation/approbation avec l’équipe.
+Obtenir instance de test, authentification, droits d’écriture AP/JE, documentation des endpoints, formats de payload et réponses. Aucun endpoint générique d’import CSV n’est supposé.
 
-Stocker les originaux immuables avec empreinte, auteur, date et taille ; lots et versions ; documents et lignes ; contrôles ; décisions de revue ; exports ; tentatives de transfert ; confirmations ; journal d’audit. Définir accès, rétention et sauvegardes. Conserver les secrets côté serveur.
+Construire ensuite les adaptateurs documentés et une action explicite après approbation. Définir les clés d’idempotence, résultats partiels, consultation de réception après délai et corrections/avoirs. Les états « fichier généré », « transmis », « pris en charge » et « import confirmé » doivent rester distincts. Conserver les identifiants externes et les réponses.
 
-Critères : refus serveur pour un utilisateur sans droit, lecture limitée aux lots autorisés, audit durable et récupération après fermeture de session. Le sélecteur de profil actuel ne sera pas réutilisé comme authentification.
+Aucun appel d’écriture au simple dépôt d’un CSV. Aucun envoi en production comptable dans cette phase. Le bouton d’envoi reste bloqué jusqu’à intégration et validation de ces dépendances.
 
-## 3. Correspondances et convertisseurs
+## Renforcer l’exploitation et les comptes
 
-Versionner les correspondances validées et figer leur version sur chaque lot. Construire des parseurs AP0001 et G/L uniquement après réception des originaux. Conserver les lignes originales et les raisons d’exclusion ; produire un diagnostic précis par ligne et des sorties reproductibles.
+Prévoir une sauvegarde hors site et une politique de rétention des originaux et audits. Les sauvegardes locales et leur rétention sont déjà en place. Ajouter filtres/pagination d’historique au-delà de la liste des 500 lots / 1 000 événements les plus récents, sans supprimer les enregistrements persistants.
 
-Pour AP, compter l’en-tête une fois et rapprocher chaque facture de ses répartitions. Pour les ventes, appliquer le filtre Sale validé, grouper selon le contrat métier et rapprocher chaque journal en centimes, puis les localisations si confirmé. Préserver identifiants, signes et commentaires. Toute correction exige un avant/après et une décision nominative ; toute nouvelle version invalide son approbation.
+Prévoir la gestion de comptes en base, le changement personnel de mot de passe, réinitialisations/suspensions immédiates, 2FA et limitation distribuée des tentatives. Conserver les rôles confirmés : les trois comptes de Chris, Miguel et Charles restent en consultation, conformément à la dernière instruction d’Olivier.
 
-Critères : lots privés de référence rapprochés ; cas d’erreurs qui se compensent globalement toujours bloqués ; formats inconnus rejetés avec diagnostic.
-
-## 4. Doublons et corrections
-
-Confirmer la clé métier (candidate AP : entité + fournisseur + numéro) et les règles d’avoirs/corrections. Ajouter empreintes, contraintes uniques et clés d’idempotence persistantes. Distinguer doublon exact, version corrigée et document métier déjà importé. Vérifier la réception après un délai réseau avant de réessayer.
-
-Critères : import identique, version corrigée, rejet partiel et état de réception inconnu couverts par des tests d’intégration ; reprise après incident sans nouvel enregistrement comptable.
-
-## 5. Valider dans R365 de test, puis connecter
-
-Faire accepter et rapprocher les fichiers cibles dans R365 de test. Confirmer les capacités réelles avec la documentation fournie ; aucun endpoint ni comportement d’import n’est supposé. Conserver identifiants externes et accusés de réception.
-
-États explicites : préparé → validé → approuvé → fichier généré → transmis → import confirmé/rejeté/à vérifier. Un téléchargement reste « fichier généré ». Toute mise en production comptable est une phase distincte après validation des résultats de test.
-
-## 6. Domaine et exploitation
-
-Confirmer le contrôle DNS de `gbtor365.artimexbakery.com` avant de le rattacher au projet dédié. Ajouter planification, reprise et notifications après décision de l’équipe. Les projets EGG Order, e-commerce et leurs configurations restent hors périmètre.
+Le domaine `gbtor365.artimexbakery.com` nécessite encore confirmation et rattachement DNS. Les autres projets Artimex restent indépendants.

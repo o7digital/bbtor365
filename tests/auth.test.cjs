@@ -28,10 +28,10 @@ test('unsigned, tampered, expired and password-rotation sessions are refused',()
 test('login page is public; dashboard and all accounting code/data require a valid session',async()=>{
   const root=await get('/');assert.equal(root.status,302);assert.equal(root.headers.get('location'),'/login');
   assert.equal((await get('/login')).status,200);
-  for(const name of ['sample-data.js','core.js','app.js','xlsx-reader.js','session.js'])assert.equal((await get('/assets/'+name)).status,401);
+  for(const name of ['core.js','app.js','xlsx-reader.js','session.js'])assert.equal((await get('/assets/'+name)).status,401);
   assert.equal((await get('/api/session')).status,401);
   for(const route of ['/.env.local','/.private/GBtoR365/dist/assets/sample-data.js','/server/auth.cjs','/../server/auth.cjs'])assert.equal((await get(route)).status,404);
-  assert.equal((await get('/api/portal?route=assets/sample-data.js')).status,401);
+  assert.equal((await get('/api/portal?route=assets/core.js')).status,401);
 });
 test('credentials are checked on the server and a successful login creates an HttpOnly, bounded session',async()=>{
   assert.equal((await post('/api/login',{email:config.email,password:'wrong'})).status,401);
@@ -41,7 +41,7 @@ test('credentials are checked on the server and a successful login creates an Ht
   const headers={Cookie:cookie.split(';')[0]};
   const session=await get('/api/session',{headers});assert.equal(session.status,200);
   const data=await session.json();assert.equal(data.user.email,config.email);assert.equal(data.user.role,'admin');assert.equal(JSON.stringify(data).includes(config.hash),false);
-  assert.equal((await get('/',{headers})).status,200);assert.equal((await get('/assets/sample-data.js',{headers})).status,200);
+  assert.equal((await get('/',{headers})).status,200);assert.equal((await get('/assets/core.js',{headers})).status,200);
   const logout=await post('/api/logout',{},headers);assert.equal(logout.status,200);assert.match(logout.headers.get('set-cookie'),/Max-Age=0/);
   assert.match(session.headers.get('cache-control'),/no-store/);
 });
@@ -57,7 +57,7 @@ test('cross-origin login/logout, invalid payloads and unsupported methods are re
 test('missing authentication configuration fails closed and invalid attempts are throttled',async()=>{
   const original=process.env.GB_AUTH_CONFIG;delete process.env.GB_AUTH_CONFIG;
   assert.equal((await post('/api/login',{email:config.email,password})).status,503);
-  assert.equal((await get('/assets/sample-data.js')).status,401);process.env.GB_AUTH_CONFIG=original;
+  assert.equal((await get('/assets/core.js')).status,401);process.env.GB_AUTH_CONFIG=original;
   for(let i=0;i<8;i++)await post('/api/login',{email:config.email,password:'wrong'});
   const limited=await post('/api/login',{email:config.email,password});assert.equal(limited.status,429);assert.equal(limited.headers.get('retry-after'),'900');
 });

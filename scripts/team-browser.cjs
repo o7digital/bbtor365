@@ -14,6 +14,7 @@ async function input(){
   let server,accounts;
   if(process.argv.includes('--remote'))accounts=await input();
   else{
+    process.env.GB_STORE_PATH=require('node:path').join(require('node:os').tmpdir(),'gb-team-'+randomBytes(8).toString('hex')+'.sqlite3');
     accounts=[];
     for(const [i,role] of ['admin','reviewer','preparer','finance','viewer','viewer','viewer'].entries()){
       const email=`test${i}@example.com`,password=randomBytes(18).toString('base64url'),salt=randomBytes(16).toString('hex');
@@ -31,15 +32,12 @@ async function input(){
       const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();
       page.setDefaultTimeout(20000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
       await page.goto(process.env.BASE_URL+'/login');await page.locator('#email').fill(account.email);await page.locator('#password').fill(account.password);await page.locator('#sign-in').click();
-      await page.locator('.demo-notice').waitFor();
+      await page.locator('#main').waitFor();
       assert.equal(await page.evaluate(()=>window.GB_SESSION.email),account.email);
       assert.equal(await page.evaluate(()=>window.GB_SESSION.role),account.role);
       const session=await (await context.request.get(process.env.BASE_URL+'/api/session')).json();assert.equal(session.user.role,account.role);
       await page.locator('.nav-item[data-nav="ap"]').click();
-      assert.equal(await page.locator('[data-action="import"]').isDisabled(),!session.user.permissions.prepare);
-      assert.equal(await page.locator('[data-action="validate"]').isDisabled(),!session.user.permissions.review);
-      if(session.user.permissions.review)await page.locator('[data-action="validate"]').click();
-      assert.equal(await page.locator('[data-action="approve"]').isDisabled(),!session.user.permissions.approve);
+      assert.equal(await page.locator('[data-action="import"]').first().isDisabled(),!session.user.permissions.prepare);
       await page.locator('.nav-item[data-nav="team"]').click();assert.equal(await page.locator('.user-card').count(),accounts.length);
       assert.equal(await page.locator('[data-action="edit-role"]').count(),0);
       await page.locator('[data-action="profile"]').click();assert.equal(await page.locator('[data-action="choose-profile"]').count(),0);

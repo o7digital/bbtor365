@@ -39,6 +39,6 @@ const sales=[[19,25,53],[12,18,47],[5,11,41],[1,4,21]].map(([start,end,count],we
 const users=[['Demo Reviewer','reviewer','DR'],['Demo Preparer','preparer','DP'],['Demo Finance','finance','DF'],['Demo Administrator','admin','DA']]
   .map(([name,role,initials])=>({name,role,initials,email:`${role}@example.com`}));
 const data={fictional:true,ap,sales,users,sourceWorkbook:'FICTIONAL_DEMO_Sales_Oct_2026.xlsx'};
-fs.writeFileSync(require('node:path').join(__dirname,'../dist/assets/sample-data.js'),
+fs.writeFileSync(require('node:path').join(__dirname,'../tests/fixtures-demo.js'),
   '// FICTIONAL DEMO ONLY. Generated independently of the supplied accounting data.\nwindow.GB_DATA = '+JSON.stringify(data)+';\n');
 console.log('Generated fictional AP and sales samples.');

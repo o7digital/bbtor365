@@ -29,7 +29,7 @@ PLAYWRIGHT_MODULE=/chemin/vers/playwright npm run test:auth-browser
 
 Le dernier script démarre lui-même son serveur et un compte de test temporaire, puis vérifie connexion EN/ES et mobile, refus des mauvais identifiants, rechargement, déconnexion, cookie falsifié et les parcours comptables. Il n’emploie pas le compte de production. Le test distant utilise `BASE_URL`, `--remote` et une entrée standard masquée ; il ne journalise pas les identifiants.
 
-L’aperçu HTML autonome généré dans `artifacts/` reste une copie de consultation **hors ligne** à données fictives. Il ne contient ni compte ni mécanisme d’accès serveur. Ne pas l’utiliser comme point d’entrée de l’hébergement.
+Le packaging ne génère plus d’aperçu autonome hors ligne. L’application nécessite son serveur authentifié et son stockage persistant. Les fixtures comptables fictives restent uniquement dans les tests.
 
 ## Administration
 
@@ -39,7 +39,7 @@ Le compte initial a été provisionné par CLI Vercel. Les identifiants ont ét�
 
 ## Portée et suite
 
-Il s’agit de comptes individuels pour accéder au prototype. Les données comptables restent fictives ; les validations, approbations et historiques restent des interactions locales de démonstration. La connexion ne crée pas de stockage de lots, d’import R365 ou de confirmations comptables.
+Il s’agit de comptes individuels pour accéder au prototype. Le portail ne précharge aucune donnée comptable. Les fichiers déposés, contrôles, décisions et historiques sont désormais conservés dans une base dédiée. Les imports R365 restent bloqués jusqu’à configuration du contrat API de test ; aucun résultat d’import n’est simulé.
 
 Une base de comptes administrable en temps réel, les invitations, le changement/rétablissement de mot de passe en autonomie, l’authentification multifacteur, la révocation individuelle des sessions et une limitation distribuée restent à construire avec un service d’identité adapté. La déconnexion actuelle efface le cookie du navigateur ; une session signée copiée ailleurs n’est invalidée qu’à expiration ou rotation de la configuration.
 
@@ -48,7 +48,7 @@ Références : [fonctions Node Vercel](https://vercel.com/docs/functions/runtime
 
 ## Droits attribués
 
-| Rôle | Consultation | Chargement local | Contrôles/revue | Approbation/export de démonstration |
+| Rôle | Consultation | Chargement local | Contrôles/revue | Approbation/export CSV |
 | --- | --- | --- | --- | --- |
 | Administrateur | Oui | Oui | Oui | Oui |
 | Revue/export | Oui | Oui | Oui | Oui |
@@ -56,7 +56,7 @@ Références : [fonctions Node Vercel](https://vercel.com/docs/functions/runtime
 | Supervision financière | Oui | Non | Oui | Oui |
 | Consultation | Oui | Non | Non | Non |
 
-Les identités et rôles proviennent de la session vérifiée côté serveur. Les capacités déterminent les actions affichées et autorisées par l’interface ; les décisions et exports comptables restent des opérations locales de démonstration, sans API métier persistante. Les contrôles métier et écritures de production restent à implémenter côté serveur comme prévu au plan.
+Les identités et rôles proviennent de la session vérifiée côté serveur. Les capacités sont contrôlées à nouveau par chaque API métier de dépôt, mapping, validation, revue, approbation et export. Les comptes en consultation lisent les lots, originaux et historiques mais ne peuvent pas modifier les décisions ni générer un export approuvé.
 
 ## Ajout de comptes
 

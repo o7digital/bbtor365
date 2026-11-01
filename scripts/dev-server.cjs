@@ -3,6 +3,7 @@ const {randomBytes}=require('node:crypto');
 const A=require('../server/auth.cjs');
 const handler=require('../server/portal.cjs');
 (async()=>{
+  if(!process.env.GB_STORE_URL&&!process.env.GB_STORE_PATH)process.env.GB_STORE_PATH=require('node:path').join(__dirname,'../.private/local-workflow.sqlite3');
   if(!process.env.GB_AUTH_CONFIG){
     const password=randomBytes(18).toString('base64url'),salt=randomBytes(16).toString('hex');
     process.env.GB_AUTH_CONFIG=JSON.stringify({email:'admin@example.com',name:'Local Administrator',salt,hash:await A.passwordHash(password,salt),secret:randomBytes(32).toString('hex')});

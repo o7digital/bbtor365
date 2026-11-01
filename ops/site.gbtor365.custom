@@ -1,0 +1,11 @@
+# Dedicated GBtoR365 bridge. Existing sites and EGG Order routes are unchanged.
+location = /gbtor365-store {
+    if ($scheme != https) { return 403; }
+    client_max_body_size 16m;
+    resolver 127.0.0.11 valid=10s ipv6=off;
+    set $gbtor365_store http://gbtor365-store:8080;
+    proxy_pass $gbtor365_store;
+    proxy_set_header Authorization $http_authorization;
+    proxy_read_timeout 25s;
+    add_header Cache-Control "no-store" always;
+}

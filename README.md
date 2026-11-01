@@ -1,20 +1,49 @@
 # GBtoR365 · Artimex
 
-Prototype statique du portail comptable **GlobalBake → Restaurant365**, indépendant d’EGG Order et du site e-commerce Artimex. L’identité Artimex, le logo, la palette crème/olive/cuivre et les écrans anglais/espagnol du ZIP sont conservés. Aucune migration de framework. Une fonction Node Vercel protège maintenant l’accès par connexion administrateur.
+Portail authentifié **GlobalBake → Restaurant365** : chargement manuel de rapports CSV, mappings versionnés et réutilisables, contrôles comptables côté serveur, revue et approbation nominatives, export CSV et historique persistant.
 
-Le dépôt et l’aperçu hébergé utilisent exclusivement un **jeu fictif**, généré sans lire les extraits comptables reçus. Les profils publics sont fictifs (`example.com`). Sept comptes individuels permettent la connexion : un administrateur, la supervision financière, la revue/export, la préparation et trois accès en consultation. Les profils publics du fichier d’exemples restent fictifs ; l’annuaire réel est chargé après authentification. Voir [la connexion et son administration](docs/AUTHENTICATION.md).
+Site : **https://gbtor365.vercel.app**. Le portail démarre sans facture ni journal préchargé. Les données affichées proviennent exclusivement des fichiers déposés par les utilisateurs. Les sept comptes existants et leurs droits sont conservés ; voir [l’authentification](docs/AUTHENTICATION.md).
 
-## Lancement local
+L’identité Artimex, les couleurs crème/olive/cuivre, les langues anglais/espagnol et l’interface HTML/CSS/JavaScript sont conservées. EGG Order et l’e-commerce restent des applications distinctes.
+
+## Parcours de travail
+
+1. Rosa ou Jorge génère le rapport dans GlobalBake et récupère le CSV. La méthode d’obtention du CSV doit être confirmée avec Pam pour chaque rapport ; le portail ne collecte pas de fichiers par FTP.
+2. Dans **Supplier invoices** ou **Sales journals**, choisir **Upload a CSV report**, le type de rapport/mapping et la période, puis déposer le fichier UTF-8.
+3. Le serveur conserve les octets originaux, l’empreinte SHA-256, l’auteur, la période et la version du mapping. Il transforme les lignes et enregistre les contrôles. Un schéma inconnu reste enregistré en état bloqué avec ses diagnostics.
+4. Exécuter **Validate batch**, puis documenter les points de revue : négatifs, commentaires de période, localisations multiples et documents potentiellement déjà présents.
+5. Une personne autorisée approuve le lot, puis génère le CSV R365. Les décisions et le fichier généré sont enregistrés dans l’audit ; le téléchargement ne confirme pas un import R365.
+6. L’envoi **R365 TEST** reste bloqué tant que l’instance, les accès et les opérations API d’écriture ne sont pas documentés et intégrés. Aucun envoi automatique ni connexion comptable de production.
+
+## Mappings
+
+Les deux modèles initiaux acceptent les colonnes **déjà préparées R365** : Vendor Transaction by Account et Journal Entry. Ils ne se présentent pas comme des convertisseurs AP0001 ou G/L bruts.
+
+Un administrateur peut ajouter un type de rapport ou une version de mapping : association par nom d’en-tête, constantes, transformation de date ISO, montants en centimes, règle de compte documentée `0092-xxxxx000 → xxxxx`, filtre de lignes, correspondances explicites de codes et regroupement. Un code de correspondance inconnu ou des valeurs incompatibles avec le regroupement bloquent le lot.
+
+Depuis un lot bloqué, **Configure from this source** utilise ses véritables en-têtes. Le mapping est contrôlé contre ce fichier avant enregistrement lorsqu’il sert de référence. Les versions existantes restent conservées. **Apply latest version** est une action explicite qui annule les anciennes validation, revue et approbation ; l’original n’est jamais remplacé.
+
+La correspondance `0092 → EGG70` n’est pas supposée. Les comptes et localisations doivent être validés par l’équipe comptable. Les identifiants, suffixes, zéros initiaux, signes et commentaires restent du texte.
+
+## Stockage et droits
+
+Interface et API sur le projet Vercel `gbtor365`. Traitements dans `server/workflow.cjs`, accès dans `server/portal.cjs`, persistance par `server/store.cjs`.
+
+Base SQLite **dédiée** sur VPS1, service Docker `gbtor365-store`, dossier privé `/srv/gbtor365-db/`. Accès HTTPS authentifié réservé à l’API Vercel ; aucune base ni fichier original dans les assets. Voir [l’exploitation et les sauvegardes](docs/OPERATIONS.md).
+
+Les contrôles d’autorisation sont vérifiés côté serveur pour le dépôt, le mapping, la validation, la revue, l’approbation et la génération CSV. Les comptes en consultation ne peuvent pas effectuer ces mutations. Les mises à jour sont atomiques avec contrôle de version : un écran périmé reçoit un conflit.
+
+Un fichier identique, même renommé, ouvre le lot existant. Les mêmes références comptables dans des fichiers différents déclenchent un point de revue persistant ; la règle métier des corrections/avoirs et l’idempotence d’une transmission R365 devront être confirmées avec R365.
+
+## Lancement et vérification
+
+Node.js récent et Python 3, sans dépendance applicative à installer :
 
 ```sh
 npm start
 ```
 
-Ouvrir http://127.0.0.1:8080. Le serveur affiche un email et un mot de passe **locaux temporaires** dans le terminal. Les identifiants hébergés sont indépendants.
-
-Les sources de l’interface restent dans `dist/`, sans compilation ni dépendance applicative. Node.js récent sert l’accès authentifié et les contrôles ; Python 3 sert au packaging. La page `/login` conserve le logo, les couleurs Artimex et les versions anglais/espagnol.
-
-## Vérifications et livrables
+Ouvrir http://127.0.0.1:8080. Le terminal affiche un compte local temporaire. Le stockage local par défaut est `.private/local-workflow.sqlite3`, ignoré par Git. `GB_STORE_PATH` permet de choisir une autre base locale. Sur Vercel, aucune écriture dans un fichier temporaire n’est utilisée : l’absence du stockage HTTPS provoque un blocage explicite.
 
 ```sh
 npm test
@@ -22,44 +51,20 @@ npm run check
 npm run build
 ```
 
-`build` vérifie que le jeu est fictif puis crée `artifacts/GBtoR365-preview.html` (consultation autonome) et `artifacts/GBtoR365_Artimex_Code.zip`. Ces artefacts ne sont pas versionnés. Le ZIP portable inclut la configuration Vercel ; les fichiers locaux privés en sont exclus.
+Les 25 tests couvrent les contrôles historiques, l’authentification et les rôles, les originaux immuables, les doublons, les mappings et leurs versions, les revues, approbations, exports et conflits. Le packaging produit `artifacts/GBtoR365_Artimex_Code.zip` avec le backend et les scripts d’exploitation ; il ne produit plus de maquette autonome hors ligne.
 
-Les 11 contrôles comptables livrés sont conservés et adaptés aux deux jeux de référence. Un douzième vérifie les montants JE invalides. Sept tests supplémentaires couvrent la connexion, les sessions falsifiées/expirées, les accès directs, les origines, les erreurs de configuration la limitation des tentatives et les comptes/rôles individuels. Pour contrôler les extraits originaux sur cette machine :
-
-```sh
-GB_SAMPLE_DATA=.private/GBtoR365/dist/assets/sample-data.js npm test
-```
-
-Le ZIP original complet a été conservé dans `.private/GBtoR365/`, ignoré par Git et Vercel. Il n’est pas requis par la suite de tests publique. Pour consulter sa version autonome, ouvrir `.private/GBtoR365/GBtoR365-preview.html` localement ; ne pas servir la racine du dépôt.
-
-La vérification navigateur optionnelle nécessite Playwright et Chrome :
+Avec Playwright et Chrome disponibles :
 
 ```sh
-npm install --no-save --package-lock=false playwright
-npm run test:auth-browser
+PLAYWRIGHT_MODULE=/chemin/vers/playwright npm run test:workflow-browser
 ```
 
-Avec une installation Playwright existante, utiliser `PLAYWRIGHT_MODULE=/chemin/vers/playwright npm run test:auth-browser`. Les vérifications authentifiées distantes utilisent `BASE_URL` et une entrée standard masquée ; voir `docs/AUTHENTICATION.md`. Les captures et fichiers de test fictifs restent dans `artifacts/`.
+Ce test utilise une base locale temporaire. `GB_REAL_AP` et `GB_REAL_JE` permettent de vérifier les fichiers reçus en local sans les déposer sur le site. Les fixtures fictives sont uniquement dans `tests/`, jamais servies ni chargées par le portail.
 
-## Parcours et limites
+## Limites et dépendances externes
 
-Navigation, recherche, pagination, détail des répartitions, quatre semaines de journaux, contrôles en centimes, revue des exceptions, approbation simulée, téléchargement CSV et historique de session. Les imports CSV/TSV/TXT utilisent les colonnes R365 ; XLSX lit les feuilles JE OOXML compatibles et leurs valeurs enregistrées, sans recalcul de formules. Limites : 10 Mo par fichier, 20 000 lignes et décompression bornée. XLS ancien et classeurs chiffrés non pris en charge.
+CSV UTF-8 jusqu’à 2 Mo, 20 000 lignes et 100 colonnes ; sortie JSON transformée jusqu’à 2,5 Mo. Cette limite permet de conserver un dépôt et un téléchargement compatibles avec les [limites Vercel](https://vercel.com/docs/functions/limitations). Les classeurs XLSX ne sont pas déposés dans ce nouveau parcours : utiliser un CSV extrait du rapport selon la méthode confirmée. L’outil d’extraction JE de référence est réservé aux tests privés du classeur préparé reçu.
 
-Les totaux d’en-tête AP ne sont comptés qu’une fois par facture. Les rapprochements restent indépendants par facture et numéro de journal. Les identifiants texte, suffixes, zéros initiaux, signes négatifs et commentaires restent conservés. Les points de revue ne sont jamais corrigés automatiquement. La règle de compte `0092-55120000 → 55120` reste bornée au format documenté ; le lien `0092 → EGG70` reste à confirmer.
+Il manque les exports GlobalBake bruts complets AP0001/G/L et leurs règles validées pour certifier les premiers convertisseurs métier ; l’API R365 TEST exige également son contrat d’écriture et ses accès. Le portail ne fabrique aucun endpoint et ne marque aucun lot comme importé. Le domaine `gbtor365.artimexbakery.com` n’est pas rattaché.
 
-Aucun envoi à GlobalBake ou R365. Le téléchargement `PREVIEW.csv` ne prouve aucun import. Lots importés, décisions et historique sont en mémoire et disparaissent au rechargement. Seule la langue est mémorisée lorsque le navigateur le permet. La détection de doublon porte sur le lot actif.
-
-## Hébergement
-
-Démo publiée : **https://gbtor365.vercel.app**. Les sept écrans et l’affichage mobile ont été vérifiés sur cette URL.
-
-Projet Vercel distinct `gbtor365`, dossier servi : `dist/`, installation et compilation de l’interface désactivées. Une fonction Node traite toutes les routes et vérifie la session avant de servir le portail ou ses données. `vercel.json` suit la [configuration officielle Vercel](https://vercel.com/docs/project-configuration/vercel-json). Publication par CLI après tests :
-
-```sh
-vercel link --yes --project gbtor365 --scope olivier-steineur
-vercel deploy --prod --yes
-```
-
-`.private/`, `.env*`, artefacts et documents ne sont pas envoyés par la CLI. Le portail demande une connexion avec un compte actif. Les données restent fictives ; `noindex` reste un réglage de référencement distinct du contrôle d’accès serveur. Le domaine envisagé `gbtor365.artimexbakery.com` n’est pas configuré par cette reprise.
-
-Voir [l’audit des sources](docs/SOURCE_AUDIT.md), [le brief](CODEX_BRIEF.md) et [le plan de production](docs/IMPLEMENTATION_PLAN.md).
+Voir [le rapport de livraison](docs/REAL_WORKFLOW_DELIVERY.md), [les sources](docs/SOURCE_AUDIT.md) et [le plan restant](docs/IMPLEMENTATION_PLAN.md).

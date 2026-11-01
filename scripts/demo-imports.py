@@ -5,7 +5,7 @@ import json
 import zipfile
 
 root = Path(__file__).resolve().parent.parent
-source = (root / "dist/assets/sample-data.js").read_text()
+source = (root / "tests/fixtures-demo.js").read_text()
 data = json.loads(source[source.index("{"):source.rindex("}") + 1])
 assert data.get("fictional"), "Only fictional fixtures may be packaged"
 out = root / "artifacts"
