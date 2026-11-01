@@ -17,7 +17,7 @@ Conserver le logo Artimex et l'identité du prototype. Les deux circuits priorit
 
 Les personnes et adresses proposées restent dans le brief original privé local `.private/GBtoR365/CODEX_BRIEF.md`. Les profils du site public sont fictifs.
 
-Un compte administrateur initial est actif. Aucun compte ni invitation n’a été créé pour les autres rôles proposés. La gestion d’équipe persistante reste à construire ; le changement de profil du mockup hors ligne reste une simulation.
+Le compte administrateur initial et six comptes individuels sont actifs avec leurs droits attribués. Aucun email ni invitation envoyé. Voir `docs/AUTHENTICATION.md`. La gestion d’équipe persistante reste à construire ; le changement de profil du mockup hors ligne reste une simulation.
 
 ## Factures fournisseurs
 

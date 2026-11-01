@@ -11,6 +11,7 @@
     "test": "node --test tests/*.test.cjs",
     "test:browser": "node scripts/browser-smoke.cjs",
     "test:auth-browser": "node scripts/auth-browser.cjs",
+    "test:team-browser": "node scripts/team-browser.cjs",
     "check": "node --check dist/assets/app.js && node --check dist/assets/core.js && node --check dist/assets/xlsx-reader.js && node --check dist/assets/login.js && node --check dist/assets/session.js && node --check server/auth.cjs && node --check server/portal.cjs && node --check api/portal.js"
   }
 }

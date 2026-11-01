@@ -61,3 +61,38 @@ test('missing authentication configuration fails closed and invalid attempts are
   for(let i=0;i<8;i++)await post('/api/login',{email:config.email,password:'wrong'});
   const limited=await post('/api/login',{email:config.email,password});assert.equal(limited.status,429);assert.equal(limited.headers.get('retry-after'),'900');
 });
+test('individual accounts keep distinct passwords and server-assigned roles without exposing hashes',async()=>{
+  const roles=['reviewer','preparer','finance','viewer'],accounts=[];
+  for(const role of roles){
+    const salt=randomBytes(16).toString('hex'),password='Unique-'+role+'-password-123';
+    const u={email:role+'@example.com',name:'Test '+role,role,salt,hash:await A.passwordHash(password,salt),active:true};
+    process.env[A.userKey(u.email)]=JSON.stringify(u);accounts.push({...u,password});
+  }
+  try{
+    const c=A.config();assert.equal(c.users.length,5);
+    for(const u of accounts){
+      const valid=await A.credentials(u.email,u.password,c);assert.equal(valid.email,u.email);
+      assert.equal(await A.credentials(u.email,password,c),null);
+      const token=A.issue(c,1000,valid),session=A.verify(token,c,1001);
+      assert.equal(session.role,u.role);assert.equal(session.permissions.manageUsers,false);
+      assert.equal(session.permissions.approve,['reviewer','finance'].includes(u.role));
+      assert.equal(session.permissions.prepare,['reviewer','preparer'].includes(u.role));
+      const changed={...c,users:c.users.map(a=>a.email===u.email?{...a,role:'admin'}:a)};
+      assert.equal(A.verify(token,changed,1001),null);
+      assert.equal(A.verify(token,{...c,users:c.users.filter(a=>a.email!==u.email)},1001),null);
+      assert.equal(A.verify(token,{...c,users:c.users.map(a=>({...a,active:false}))},1001),null);
+    }
+    const token=A.issue(c),team=await get('/api/team',{headers:{Cookie:`${A.COOKIE}=${token}`}});
+    assert.equal(team.status,200);const body=await team.json();assert.equal(body.users.length,5);
+    assert.ok(body.users.every(u=>!('hash'in u)&&!('salt'in u)&&!('secret'in u)));
+    assert.equal((await get('/api/team')).status,401);
+    assert.equal(A.verify(token,c).email,config.email);
+  }finally{for(const u of accounts)delete process.env[A.userKey(u.email)];}
+});
+test('invalid team records and duplicate administrator identities fail closed',()=>{
+  const key=A.userKey(config.email);
+  try{process.env[key]=JSON.stringify({...config,role:'viewer'});assert.equal(A.config(),null);
+    process.env[key]='bad json';assert.equal(A.config(),null);
+    process.env[key]=JSON.stringify({...config,email:'other@example.com',role:'viewer'});assert.equal(A.config(),null);
+  }finally{delete process.env[key];}
+});

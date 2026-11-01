@@ -4,7 +4,7 @@ La reprise conserve le prototype comptable, désormais protégé par un accès a
 
 ## 1. Valider les parcours et réunir les sources
 
-Faire valider les écrans et responsabilités par la revue comptable, la préparation des ventes, la supervision financière et l’administration. Les personnes proposées et leurs adresses restent dans le brief original local `.private/GBtoR365/CODEX_BRIEF.md` ; un compte administrateur initial existe, les autres comptes restent à créer.
+Faire valider les écrans et responsabilités par la revue comptable, la préparation des ventes, la supervision financière et l’administration. Les personnes proposées et leurs adresses restent dans le brief original local `.private/GBtoR365/CODEX_BRIEF.md` ; sept comptes individuels existent ; les données de comptes sont configurées dans des variables sensibles, sans base d’administration en temps réel.
 
 Obtenir : AP0001 brut complet ; G/L Transaction Report brut ; classeur de ventes original ; exemples R365 acceptés/rejetés ; correspondances fournisseurs, clients, comptes et localisations validées ; traitement des avoirs/corrections ; formats de date ; modalités d’export GlobalBake ; documentation des accès et capacités d’import R365, avec un environnement de test.
 

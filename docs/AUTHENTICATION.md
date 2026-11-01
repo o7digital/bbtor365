@@ -1,16 +1,16 @@
-# Connexion administrateur — GBtoR365
+# Connexion et comptes — GBtoR365
 
-L’accès hébergé demande maintenant un email et un mot de passe. La vérification est effectuée côté serveur. Le compte initial est celui d’Olivier ; aucun compte ni invitation n’est créé pour les autres personnes proposées dans le brief.
+L’accès hébergé demande maintenant un email et un mot de passe. La vérification est effectuée côté serveur. Le compte administrateur initial est conservé. Six comptes individuels ont été ajoutés à la demande d’Olivier, avec les droits confirmés : supervision financière, revue/export, préparation et trois accès en consultation. Aucun email ni invitation envoyé.
 
 ## Fonctionnement
 
 `api/portal.js` utilise `server/portal.cjs` comme point d’entrée unique. Toutes les routes Vercel passent par cette fonction, y compris les fichiers JavaScript contenant les données de démonstration. Seuls la page de connexion, ses scripts/styles et le logo/favicon sont publics. Une requête anonyme vers le portail redirige vers `/login` ; une requête directe vers les données reçoit 401.
 
-Le mot de passe n’est pas dans le code, le HTML, le navigateur ou Git. Seule une empreinte scrypt avec sel est stockée avec la configuration du compte dans la variable Vercel sensible `GB_AUTH_CONFIG`. Les sessions sont signées HMAC-SHA256, limitées à huit heures et liées à la version du mot de passe. Le cookie est HttpOnly, SameSite=Strict, Secure en production, sans domaine partagé. Les réponses authentifiées et d’authentification ne sont pas mises en cache.
+Le mot de passe n’est pas dans le code, le HTML, le navigateur ou Git. Seules des empreintes scrypt avec sel sont stockées dans les variables Vercel sensibles. `GB_AUTH_CONFIG` conserve le compte administrateur et sa clé de signature ; chaque nouveau compte utilise sa propre variable `GB_USER_<empreinte_email>`. Aucun secret d’EGG Order n’est repris. Les sessions sont signées HMAC-SHA256, limitées à huit heures et liées à la version du mot de passe et du rôle. Une session d’un compte retiré, désactivé ou dont le rôle change est refusée après déploiement de la nouvelle configuration. Le cookie est HttpOnly, SameSite=Strict, Secure en production, sans domaine partagé. Les réponses authentifiées et d’authentification ne sont pas mises en cache.
 
 Les identifiants invalides ont le même message d’erreur. Les requêtes de connexion/déconnexion doivent être de même origine ; corps limité à 4 Ko. Les tentatives invalides sont limitées par instance (8 échecs par fenêtre de 15 minutes), avec une limite de calculs simultanés. Cette limitation n’est pas un compteur distribué persistant.
 
-`/api/session` fournit uniquement le nom, l’email, le rôle administrateur et l’expiration de session. Le compte réel remplace le profil simulé dans la barre supérieure. Son menu permet de se déconnecter ; le changement de profil simulé n’est pas disponible dans le portail hébergé. La session est vérifiée au chargement et périodiquement lorsque l’onglet reste ouvert.
+`/api/session` fournit uniquement le nom, l’email, le rôle attribué et les capacités associées et l’expiration de session. Le compte connecté apparaît dans la barre supérieure. `/api/team`, réservé aux sessions valides, fournit l’annuaire des comptes actifs et leurs rôles, sans empreinte ni secret. L’écran Équipe affiche ces comptes réels et ne propose pas d’édition fictive des droits. Son menu permet de se déconnecter ; le changement de profil simulé n’est pas disponible dans le portail hébergé. La session est vérifiée au chargement et périodiquement lorsque l’onglet reste ouvert.
 
 ## Exécution locale et tests
 
@@ -39,8 +39,29 @@ Le compte initial a été provisionné par CLI Vercel. Les identifiants ont ét�
 
 ## Portée et suite
 
-Il s’agit d’un accès administrateur initial au prototype. Les données comptables restent fictives ; les validations, approbations et historiques restent des interactions locales de démonstration. La connexion ne crée pas de stockage de lots, d’import R365 ou de confirmations comptables.
+Il s’agit de comptes individuels pour accéder au prototype. Les données comptables restent fictives ; les validations, approbations et historiques restent des interactions locales de démonstration. La connexion ne crée pas de stockage de lots, d’import R365 ou de confirmations comptables.
 
-La gestion d’équipe persistante, les invitations, le changement/rétablissement de mot de passe en autonomie, l’authentification multifacteur, la révocation individuelle des sessions et une limitation distribuée restent à construire avec un service d’identité adapté. La déconnexion actuelle efface le cookie du navigateur ; une session signée copiée ailleurs n’est invalidée qu’à expiration ou rotation de la configuration.
+Une base de comptes administrable en temps réel, les invitations, le changement/rétablissement de mot de passe en autonomie, l’authentification multifacteur, la révocation individuelle des sessions et une limitation distribuée restent à construire avec un service d’identité adapté. La déconnexion actuelle efface le cookie du navigateur ; une session signée copiée ailleurs n’est invalidée qu’à expiration ou rotation de la configuration.
 
 Références : [fonctions Node Vercel](https://vercel.com/docs/functions/runtimes/node-js), [routage et configuration Vercel](https://vercel.com/docs/project-configuration/vercel-json).
+
+
+## Droits attribués
+
+| Rôle | Consultation | Chargement local | Contrôles/revue | Approbation/export de démonstration |
+| --- | --- | --- | --- | --- |
+| Administrateur | Oui | Oui | Oui | Oui |
+| Revue/export | Oui | Oui | Oui | Oui |
+| Préparation | Oui | Oui | Oui | Non |
+| Supervision financière | Oui | Non | Oui | Oui |
+| Consultation | Oui | Non | Non | Non |
+
+Les identités et rôles proviennent de la session vérifiée côté serveur. Les capacités déterminent les actions affichées et autorisées par l’interface ; les décisions et exports comptables restent des opérations locales de démonstration, sans API métier persistante. Les contrôles métier et écritures de production restent à implémenter côté serveur comme prévu au plan.
+
+## Ajout de comptes
+
+`node scripts/provision-users.cjs` lit une liste JSON de noms/emails/rôles par une entrée standard masquée. Il génère des mots de passe individuels aléatoires, transmet seulement les empreintes salées aux variables sensibles Production/Preview et affiche chaque nouveau mot de passe une fois pour remise privée. Les variables existantes sont ignorées : rejouer la liste ne réinitialise pas les comptes. Le compte administrateur initial et la clé de signature sont préservés.
+
+Les trois premières adresses proviennent du brief privé GBtoR365 ; celles de Chris/Christian Garcia, Miguel Solis et Charles Bonaparte sont vérifiées dans l’annuaire local d’EGG Order (`lib/directory.mjs`), consulté en lecture seule. Les droits de ce projet n’ont pas été repris d’EGG Order : les trois accès en consultation ont été confirmés par Olivier. Aucun fichier de cet autre projet modifié.
+
+`npm run test:team-browser` démarre un serveur et sept comptes fictifs pour vérifier leurs connexions séparées, les capacités, l’annuaire et les déconnexions. Le mode distant lit les identifiants par entrée standard masquée, sans les journaliser.

@@ -46,3 +46,11 @@ Fichiers principaux : `server/auth.cjs`, `server/portal.cjs`, `api/portal.js`, `
 Vérifications locales : 17/17 tests Node (12 comptables et 5 d’authentification), syntaxe JavaScript et packaging valides. Parcours navigateur de connexion EN/ES à 1 440, 390 et 320 px ; mauvais mot de passe refusé ; cookie signé HttpOnly et SameSite=Strict ; session conservée au rechargement ; données inaccessibles sans session ; déconnexion puis refus d’accès ; cookie falsifié refusé. Les parcours comptables complets restent validés après connexion, sur les sept écrans et quatre largeurs.
 
 Le compte administrateur initial est provisionné par l’entrée standard de la CLI Vercel dans une variable sensible Production/Preview. Le mot de passe aléatoire n’est enregistré dans aucun fichier. Les autres rôles restent des propositions ; les interactions comptables restent simulées.
+
+## Ajout des six comptes individuels
+
+À la demande d’Olivier, ajout de comptes pour la supervision financière, la revue/export, la préparation et trois personnes en consultation. Les six adresses sont vérifiées dans les sources locales ; aucune adresse déduite d’un nom. Le choix de la consultation pour Chris, Miguel et Charles a été confirmé explicitement.
+
+`server/auth.cjs` lit des enregistrements de compte indépendants dans les variables sensibles Vercel, conserve la configuration et les identifiants administrateur existants, et émet des sessions nominatives avec rôle et capacités. La modification de rôle, la désactivation ou le retrait d’un compte invalide ses sessions après redéploiement. `/api/team` ne renvoie que les profils actifs, sans empreintes ni secrets. L’interface affiche les vrais comptes et désactive les actions locales incompatibles avec les droits ; l’approbation et l’export restent des démonstrations sans écriture comptable serveur.
+
+Vérifications : 19 tests Node réussis, dont authentification de plusieurs comptes, mots de passe distincts, rôle non interchangeable, invalidation des sessions et rejet des enregistrements dupliqués/malformés. Test navigateur local : sept connexions indépendantes, annuaire de sept comptes, permissions de chargement/revue/approbation et déconnexion. Les identifiants individuels sont générés une fois puis transmis seulement à Vercel sous forme d’empreintes ; aucun fichier d’identifiants ni envoi d’email.

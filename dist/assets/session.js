@@ -6,8 +6,11 @@
   }
   try{
     const user=await check();if(!user)return;window.GB_SESSION=user;
+    const teamResponse=await fetch('/api/team',{cache:'no-store',credentials:'same-origin'});
+    if(!teamResponse.ok)throw Error('Unable to load the team');
+    const team=(await teamResponse.json()).users;
     for(const src of ['sample-data.js','core.js','xlsx-reader.js','app.js']){
-      if(src==='app.js')window.GB_DATA.users[3]=user;
+      if(src==='app.js')window.GB_DATA.users=team.sort((a,b)=>['reviewer','preparer','finance','admin','viewer'].indexOf(a.role)-['reviewer','preparer','finance','admin','viewer'].indexOf(b.role));
       await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='/assets/'+src;script.onload=resolve;script.onerror=reject;document.body.append(script);});
     }
     setInterval(()=>check().catch(()=>{}),60000);

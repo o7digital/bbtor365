@@ -52,10 +52,11 @@ module.exports=async function portal(req,res){
     if(!body||typeof body!=='object')return send(res,400,{error:'request'});
     let valid=false;hashing++;try{valid=await A.credentials(body.email,body.password,c);}finally{hashing--;}
     if(!valid){failed(ip);return send(res,401,{error:'credentials'});}
-    attempts.delete(ip);res.setHeader('Set-Cookie',A.cookie(A.issue(c),secure));return send(res,200,{ok:true});
+    attempts.delete(ip);res.setHeader('Set-Cookie',A.cookie(A.issue(c,undefined,valid),secure));return send(res,200,{ok:true});
   }
   if(req.method!=='GET'&&req.method!=='HEAD'){res.setHeader('Allow','GET, HEAD');return send(res,405,{error:'method'});}
   if(route==='/api/session')return send(res,user?200:401,user?{user}:{error:'unauthorized'});
+  if(route==='/api/team')return send(res,user?200:401,user?{users:A.users(c).filter(u=>u.active!==false).map(A.publicUser)}:{error:'unauthorized'});
   const file=publicFiles.get(route)||protectedFiles.get(route);
   if(!file)return send(res,404,{error:'not_found'});
   if(protectedFiles.has(route)&&!user){

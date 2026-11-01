@@ -2,7 +2,7 @@
 
 Prototype statique du portail comptable **GlobalBake → Restaurant365**, indépendant d’EGG Order et du site e-commerce Artimex. L’identité Artimex, le logo, la palette crème/olive/cuivre et les écrans anglais/espagnol du ZIP sont conservés. Aucune migration de framework. Une fonction Node Vercel protège maintenant l’accès par connexion administrateur.
 
-Le dépôt et l’aperçu hébergé utilisent exclusivement un **jeu fictif**, généré sans lire les extraits comptables reçus. Les profils publics sont fictifs (`example.com`). Un compte administrateur réel permet la connexion ; les autres profils restent des propositions fictives, sans compte créé. Voir [la connexion et son administration](docs/AUTHENTICATION.md).
+Le dépôt et l’aperçu hébergé utilisent exclusivement un **jeu fictif**, généré sans lire les extraits comptables reçus. Les profils publics sont fictifs (`example.com`). Sept comptes individuels permettent la connexion : un administrateur, la supervision financière, la revue/export, la préparation et trois accès en consultation. Les profils publics du fichier d’exemples restent fictifs ; l’annuaire réel est chargé après authentification. Voir [la connexion et son administration](docs/AUTHENTICATION.md).
 
 ## Lancement local
 
@@ -24,7 +24,7 @@ npm run build
 
 `build` vérifie que le jeu est fictif puis crée `artifacts/GBtoR365-preview.html` (consultation autonome) et `artifacts/GBtoR365_Artimex_Code.zip`. Ces artefacts ne sont pas versionnés. Le ZIP portable inclut la configuration Vercel ; les fichiers locaux privés en sont exclus.
 
-Les 11 contrôles comptables livrés sont conservés et adaptés aux deux jeux de référence. Un douzième vérifie les montants JE invalides. Cinq tests supplémentaires couvrent la connexion, les sessions falsifiées/expirées, les accès directs, les origines, les erreurs de configuration et la limitation des tentatives. Pour contrôler les extraits originaux sur cette machine :
+Les 11 contrôles comptables livrés sont conservés et adaptés aux deux jeux de référence. Un douzième vérifie les montants JE invalides. Sept tests supplémentaires couvrent la connexion, les sessions falsifiées/expirées, les accès directs, les origines, les erreurs de configuration la limitation des tentatives et les comptes/rôles individuels. Pour contrôler les extraits originaux sur cette machine :
 
 ```sh
 GB_SAMPLE_DATA=.private/GBtoR365/dist/assets/sample-data.js npm test
@@ -60,6 +60,6 @@ vercel link --yes --project gbtor365 --scope olivier-steineur
 vercel deploy --prod --yes
 ```
 
-`.private/`, `.env*`, artefacts et documents ne sont pas envoyés par la CLI. Le portail demande une connexion administrateur. Les données restent fictives ; `noindex` reste un réglage de référencement distinct du contrôle d’accès serveur. Le domaine envisagé `gbtor365.artimexbakery.com` n’est pas configuré par cette reprise.
+`.private/`, `.env*`, artefacts et documents ne sont pas envoyés par la CLI. Le portail demande une connexion avec un compte actif. Les données restent fictives ; `noindex` reste un réglage de référencement distinct du contrôle d’accès serveur. Le domaine envisagé `gbtor365.artimexbakery.com` n’est pas configuré par cette reprise.
 
 Voir [l’audit des sources](docs/SOURCE_AUDIT.md), [le brief](CODEX_BRIEF.md) et [le plan de production](docs/IMPLEMENTATION_PLAN.md).
