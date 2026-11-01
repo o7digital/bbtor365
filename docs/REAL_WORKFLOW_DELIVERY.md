@@ -27,3 +27,11 @@ Les données reçues sont vérifiées dans une base locale temporaire. Aucun lot
 - Authentification : les comptes existants fonctionnent ; la 2FA et le changement autonome de mot de passe ne sont pas ajoutés par cette évolution du flux comptable.
 
 Le parcours local vérifié va du CSV réellement déposé au fichier cible approuvé. La génération du rapport dans GlobalBake et un import accepté dans R365 TEST ne sont pas vérifiés de bout en bout sans les éléments ci-dessus.
+
+## Vérifié sur le site déployé
+
+Publication CLI Vercel à partir du commit `b6b8fcb`, déploiement `dpl_ESjSfCdaZLHe8HT2UdDBo3AsmLSv`, URL stable https://gbtor365.vercel.app.
+
+Vérification externe : huit écrans accessibles, aucune erreur JavaScript, affichage mobile sans débordement, aucun lot préchargé et deux modèles de colonnes préparées. Les anciennes données fictives et les fixtures de tests ne sont plus accessibles dans les assets. Les sept comptes ont été reconnectés séparément avec leurs identifiants existants et les droits attendus.
+
+Le stockage HTTPS refuse les requêtes sans jeton. Un marqueur technique a été retrouvé après redémarrage du seul service dédié ; le compteur de lots restait nul. Le code de stockage installé sur VPS1 correspond exactement à la source versionnée. Aucun fichier comptable de test ou de référence n’a été déposé en production.
