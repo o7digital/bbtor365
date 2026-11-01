@@ -36,3 +36,13 @@ Publication par `vercel deploy --prod --yes --scope olivier-steineur` sur le pro
 Contrôle externe : page d’entrée et six assets principaux en HTTP 200 ; données servies identiques au jeu fictif local ; en-tête `X-Robots-Tag: noindex, nofollow`. Les chemins privés, `.env.local`, documents et aperçu autonome à la racine répondent 404. Les sept vues `#overview`, `#ap`, `#sales`, `#mapping`, `#activity`, `#team`, `#guide` s’ouvrent dans Chrome sans erreur JavaScript ; l’accueil mobile à 390 px ne déborde pas. Captures finales dans `artifacts/production-desktop.png` et `artifacts/production-mobile.png`.
 
 Code poussé sur `setup/gbtor365-preview` dans `o7digital/bbtor365`. Aucun autre projet Artimex ni domaine existant modifié.
+
+## Ajout de la connexion administrateur
+
+À la demande d’Olivier après revue de sa capture du Bureau, une connexion serveur a été ajoutée au prototype. Voir `AUTHENTICATION.md` pour le fonctionnement, le provisionnement et les limites de cet accès initial.
+
+Fichiers principaux : `server/auth.cjs`, `server/portal.cjs`, `api/portal.js`, `dist/login.html`, `dist/assets/login.css`, `dist/assets/login.js`, `dist/assets/session.js`, intégration du compte et de la déconnexion dans `dist/assets/app.js`, configuration de toutes les routes dans `vercel.json`. Les scripts de démarrage, de packaging et de vérification navigateur ainsi que la documentation ont été adaptés. Aucun secret n’est versionné.
+
+Vérifications locales : 17/17 tests Node (12 comptables et 5 d’authentification), syntaxe JavaScript et packaging valides. Parcours navigateur de connexion EN/ES à 1 440, 390 et 320 px ; mauvais mot de passe refusé ; cookie signé HttpOnly et SameSite=Strict ; session conservée au rechargement ; données inaccessibles sans session ; déconnexion puis refus d’accès ; cookie falsifié refusé. Les parcours comptables complets restent validés après connexion, sur les sept écrans et quatre largeurs.
+
+Le compte administrateur initial est provisionné par l’entrée standard de la CLI Vercel dans une variable sensible Production/Preview. Le mot de passe aléatoire n’est enregistré dans aucun fichier. Les autres rôles restent des propositions ; les interactions comptables restent simulées.

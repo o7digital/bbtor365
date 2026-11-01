@@ -24,4 +24,4 @@ L’identité graphique et le logo Artimex du ZIP sont conservés. La règle `00
 
 Les parcours navigateur XLSX sont vérifiés avec un classeur OOXML fictif de quatre feuilles, généré par `scripts/demo-imports.py` dans `artifacts/`. Il utilise les colonnes JE N:X et l’en-tête en ligne 5. Le classeur original de 96 feuilles n’a pas été reçu et ne peut donc pas être retesté ici.
 
-Aucun test d’import dans R365, aucune transmission comptable, aucun compte réel ni invitation. Les prochaines dépendances figurent dans le plan d’implémentation.
+Aucun test d’import dans R365 ni transmission comptable. Un compte administrateur initial protège désormais l’accès ; aucune invitation ni autre compte utilisateur créé. Voir `AUTHENTICATION.md`. Les prochaines dépendances figurent dans le plan d’implémentation.

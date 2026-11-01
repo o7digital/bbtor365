@@ -4,7 +4,7 @@
 
 Créer un portail Artimex dédié à la préparation, la validation et au transfert de données comptables de GlobalBake vers Restaurant365. Le domaine envisagé est `gbtor365.artimexbakery.com` ; il n'est pas configuré par ce prototype. Garder ce projet séparé d'EGG Order, qui gère l'autre sens : commandes restaurant R365 → GlobalBake.
 
-Conserver le logo Artimex et l'identité du prototype. Les deux circuits prioritaires sont les factures fournisseurs et les journaux hebdomadaires de ventes. Les échanges API, l'authentification réelle et les tâches planifiées ne sont pas implémentés dans ce livrable.
+Conserver le logo Artimex et l'identité du prototype. Les deux circuits prioritaires sont les factures fournisseurs et les journaux hebdomadaires de ventes. Les échanges comptables API et les tâches planifiées ne sont pas implémentés. Un accès administrateur initial a été ajouté à la demande d’Olivier ; voir `docs/AUTHENTICATION.md`.
 
 ## Personnes et rôles proposés à confirmer
 
@@ -17,7 +17,7 @@ Conserver le logo Artimex et l'identité du prototype. Les deux circuits priorit
 
 Les personnes et adresses proposées restent dans le brief original privé local `.private/GBtoR365/CODEX_BRIEF.md`. Les profils du site public sont fictifs.
 
-Aucun compte ni invitation n'a été créé. Les droits doivent être contrôlés côté serveur en production. Le changement de profil du mockup est uniquement une simulation.
+Un compte administrateur initial est actif. Aucun compte ni invitation n’a été créé pour les autres rôles proposés. La gestion d’équipe persistante reste à construire ; le changement de profil du mockup hors ligne reste une simulation.
 
 ## Factures fournisseurs
 

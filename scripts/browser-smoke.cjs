@@ -7,7 +7,7 @@ const {execFileSync} = require('node:child_process');
 const C = require('../dist/assets/core.js');
 const url = process.env.BASE_URL || 'http://127.0.0.1:8080';
 const artifacts = path.join(__dirname,'../artifacts');
-async function run(){
+async function run(credentials){
   await fs.mkdir(artifacts,{recursive:true});
   execFileSync('python3',[path.join(__dirname,'demo-imports.py')]);
   const browser=await chromium.launch({channel:'chrome',headless:true});
@@ -17,7 +17,13 @@ async function run(){
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
     const response=await page.goto(url);assert.equal(response.status(),200);
+    if(new URL(page.url()).pathname==='/login'){
+      const account=credentials||{email:process.env.GB_TEST_EMAIL,password:process.env.GB_TEST_PASSWORD};
+      if(!account.email||!account.password)throw Error('Browser QA needs GB_TEST_EMAIL and GB_TEST_PASSWORD for the authenticated portal.');
+      await page.locator('#email').fill(account.email);await page.locator('#password').fill(account.password);await page.locator('#sign-in').click();
+    }
     await page.locator('.demo-notice').waitFor();
+    const authenticated=await page.evaluate(()=>!!window.GB_SESSION);
     const data=await page.evaluate(()=>window.GB_DATA);
     assert.equal(data.fictional,true);
     const action=name=>page.locator(`[data-action="${name}"]`).last();
@@ -42,7 +48,7 @@ async function run(){
     for(const route of ['ap','sales','mapping','activity','team','guide']) {
       await nav(route);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`${route} overflows in Spanish`);
     }
-    await page.reload();assert.equal(await page.locator('html').getAttribute('lang'),'es');
+    await page.reload();await page.locator('.demo-notice').waitFor();assert.equal(await page.locator('html').getAttribute('lang'),'es');
     await action('language').click();
     await page.setViewportSize({width:1440,height:1000});
     await nav('ap');
@@ -77,9 +83,13 @@ async function run(){
     assert.equal(C.summarizeJE(salesCSV.rows).issues.filter(i=>i.code==='period').length,9);
     await page.locator('#week-select').selectOption('2');
     await action('review').click();assert.equal(await page.locator('[data-review-code="locations"]').count(),1);await action('close').click();
-    await action('profile').click();await page.locator('[data-action="choose-profile"][data-user="1"]').click();
-    await action('validate').click();assert.equal(await action('approve').isDisabled(),true);
-    await action('profile').click();await page.locator('[data-action="choose-profile"][data-user="0"]').click();
+    if(authenticated){
+      await action('profile').click();assert.equal(await page.locator('[data-action="choose-profile"]').count(),0);await action('close').click();
+    }else{
+      await action('profile').click();await page.locator('[data-action="choose-profile"][data-user="1"]').click();
+      await action('validate').click();assert.equal(await action('approve').isDisabled(),true);
+      await action('profile').click();await page.locator('[data-action="choose-profile"][data-user="0"]').click();
+    }
     for(const [extension,delimiter] of [['csv',','],['tsv','\t'],['txt',';']]) {
       await nav('ap');await action('import').click();
       const row={...data.ap.rows[0],Number:`00042${extension}DM`,Amount:'25.50','Detail Amount':'25.50'};
@@ -114,12 +124,13 @@ async function run(){
     assert.match(await page.locator('main').innerText(),/Duplicate skipped/);
     await action('reset').click();await action('confirm-reset').click();await nav('activity');
     assert.match(await page.locator('main').innerText(),/Your review starts here/);
-    await page.reload();assert.match(await page.locator('main').innerText(),/Your review starts here/);
+    await page.reload();await page.locator('.demo-notice').waitFor();assert.match(await page.locator('main').innerText(),/Your review starts here/);
     await page.addInitScript(()=>Object.defineProperty(window,'localStorage',{get(){throw new Error('Storage blocked')}}));
-    await page.reload();await page.locator('.demo-notice').waitFor();
+    await page.reload();await page.locator('.demo-notice').waitFor();await page.locator('.demo-notice').waitFor();
     await action('language').click();assert.equal(await page.locator('html').getAttribute('lang'),'es');
     assert.deepEqual(errors,[]);
     console.log(`Browser QA passed: ${url}; 7 screens, 4 widths, EN/ES, AP/JE review and CSV export, CSV/TSV/TXT/XLSX imports, duplicate rejection, roles and session reset.`);
   } finally {await browser.close();}
 }
-run().catch(e=>{console.error(e);process.exitCode=1});
+module.exports=run;
+if(require.main===module)run().catch(e=>{console.error(e);process.exitCode=1});

@@ -1,8 +1,8 @@
 # GBtoR365 · Artimex
 
-Prototype statique du portail comptable **GlobalBake → Restaurant365**, indépendant d’EGG Order et du site e-commerce Artimex. L’identité Artimex, le logo, la palette crème/olive/cuivre et les écrans anglais/espagnol du ZIP sont conservés. Aucun framework ni backend ajouté.
+Prototype statique du portail comptable **GlobalBake → Restaurant365**, indépendant d’EGG Order et du site e-commerce Artimex. L’identité Artimex, le logo, la palette crème/olive/cuivre et les écrans anglais/espagnol du ZIP sont conservés. Aucune migration de framework. Une fonction Node Vercel protège maintenant l’accès par connexion administrateur.
 
-Le dépôt et l’aperçu hébergé utilisent exclusivement un **jeu fictif**, généré sans lire les extraits comptables reçus. Les profils publics sont fictifs (`example.com`). Le sélecteur de rôle simule l’interface ; il ne crée aucun compte.
+Le dépôt et l’aperçu hébergé utilisent exclusivement un **jeu fictif**, généré sans lire les extraits comptables reçus. Les profils publics sont fictifs (`example.com`). Un compte administrateur réel permet la connexion ; les autres profils restent des propositions fictives, sans compte créé. Voir [la connexion et son administration](docs/AUTHENTICATION.md).
 
 ## Lancement local
 
@@ -10,13 +10,9 @@ Le dépôt et l’aperçu hébergé utilisent exclusivement un **jeu fictif**, g
 npm start
 ```
 
-Ouvrir http://localhost:8080. Équivalent sans npm :
+Ouvrir http://127.0.0.1:8080. Le serveur affiche un email et un mot de passe **locaux temporaires** dans le terminal. Les identifiants hébergés sont indépendants.
 
-```sh
-python3 -m http.server 8080 --bind 127.0.0.1 --directory dist
-```
-
-Les sources de développement sont dans `dist/`. Le fonctionnement du site ne nécessite aucune dépendance ni compilation. Node.js récent sert uniquement aux vérifications ; Python 3 sert à l’aperçu et au packaging.
+Les sources de l’interface restent dans `dist/`, sans compilation ni dépendance applicative. Node.js récent sert l’accès authentifié et les contrôles ; Python 3 sert au packaging. La page `/login` conserve le logo, les couleurs Artimex et les versions anglais/espagnol.
 
 ## Vérifications et livrables
 
@@ -28,7 +24,7 @@ npm run build
 
 `build` vérifie que le jeu est fictif puis crée `artifacts/GBtoR365-preview.html` (consultation autonome) et `artifacts/GBtoR365_Artimex_Code.zip`. Ces artefacts ne sont pas versionnés. Le ZIP portable inclut la configuration Vercel ; les fichiers locaux privés en sont exclus.
 
-Les 11 contrôles livrés sont conservés et adaptés aux deux jeux de référence. Un douzième vérifie qu’un montant de journal invalide produit un diagnostic bloquant. Pour contrôler les extraits originaux sur cette machine :
+Les 11 contrôles comptables livrés sont conservés et adaptés aux deux jeux de référence. Un douzième vérifie les montants JE invalides. Cinq tests supplémentaires couvrent la connexion, les sessions falsifiées/expirées, les accès directs, les origines, les erreurs de configuration et la limitation des tentatives. Pour contrôler les extraits originaux sur cette machine :
 
 ```sh
 GB_SAMPLE_DATA=.private/GBtoR365/dist/assets/sample-data.js npm test
@@ -40,12 +36,10 @@ La vérification navigateur optionnelle nécessite Playwright et Chrome :
 
 ```sh
 npm install --no-save --package-lock=false playwright
-npm start
-# Autre terminal :
-npm run test:browser
+npm run test:auth-browser
 ```
 
-Avec une installation Playwright existante, utiliser `PLAYWRIGHT_MODULE=/chemin/vers/playwright npm run test:browser`. `BASE_URL` permet de vérifier l’URL déployée. Les captures et fichiers de test fictifs restent dans `artifacts/`.
+Avec une installation Playwright existante, utiliser `PLAYWRIGHT_MODULE=/chemin/vers/playwright npm run test:auth-browser`. Les vérifications authentifiées distantes utilisent `BASE_URL` et une entrée standard masquée ; voir `docs/AUTHENTICATION.md`. Les captures et fichiers de test fictifs restent dans `artifacts/`.
 
 ## Parcours et limites
 
@@ -59,13 +53,13 @@ Aucun envoi à GlobalBake ou R365. Le téléchargement `PREVIEW.csv` ne prouve a
 
 Démo publiée : **https://gbtor365.vercel.app**. Les sept écrans et l’affichage mobile ont été vérifiés sur cette URL.
 
-Projet Vercel distinct `gbtor365`, dossier servi : `dist/`, installation et compilation désactivées. `vercel.json` suit la [configuration officielle Vercel](https://vercel.com/docs/project-configuration/vercel-json). Publication par CLI après tests :
+Projet Vercel distinct `gbtor365`, dossier servi : `dist/`, installation et compilation de l’interface désactivées. Une fonction Node traite toutes les routes et vérifie la session avant de servir le portail ou ses données. `vercel.json` suit la [configuration officielle Vercel](https://vercel.com/docs/project-configuration/vercel-json). Publication par CLI après tests :
 
 ```sh
 vercel link --yes --project gbtor365 --scope olivier-steineur
 vercel deploy --prod --yes
 ```
 
-`.private/`, `.env*`, artefacts et documents ne sont pas envoyés par la CLI. Le site reste une démonstration publique fictive ; `noindex` n’est pas un contrôle d’accès. Le domaine envisagé `gbtor365.artimexbakery.com` n’est pas configuré par cette reprise.
+`.private/`, `.env*`, artefacts et documents ne sont pas envoyés par la CLI. Le portail demande une connexion administrateur. Les données restent fictives ; `noindex` reste un réglage de référencement distinct du contrôle d’accès serveur. Le domaine envisagé `gbtor365.artimexbakery.com` n’est pas configuré par cette reprise.
 
 Voir [l’audit des sources](docs/SOURCE_AUDIT.md), [le brief](CODEX_BRIEF.md) et [le plan de production](docs/IMPLEMENTATION_PLAN.md).

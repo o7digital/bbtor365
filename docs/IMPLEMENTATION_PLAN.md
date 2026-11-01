@@ -1,10 +1,10 @@
 # Plan d’implémentation — GBtoR365
 
-La reprise livre un aperçu statique vérifiable. Les étapes suivantes nécessitent une validation métier et des fichiers complets ; aucune règle comptable manquante n’est déduite du mockup.
+La reprise conserve le prototype comptable, désormais protégé par un accès administrateur initial ; voir `AUTHENTICATION.md`. Les étapes suivantes nécessitent une validation métier et des fichiers complets ; aucune règle comptable manquante n’est déduite du mockup.
 
 ## 1. Valider les parcours et réunir les sources
 
-Faire valider les écrans et responsabilités par la revue comptable, la préparation des ventes, la supervision financière et l’administration. Les personnes proposées et leurs adresses restent dans le brief original local `.private/GBtoR365/CODEX_BRIEF.md` ; aucun compte n’existe encore.
+Faire valider les écrans et responsabilités par la revue comptable, la préparation des ventes, la supervision financière et l’administration. Les personnes proposées et leurs adresses restent dans le brief original local `.private/GBtoR365/CODEX_BRIEF.md` ; un compte administrateur initial existe, les autres comptes restent à créer.
 
 Obtenir : AP0001 brut complet ; G/L Transaction Report brut ; classeur de ventes original ; exemples R365 acceptés/rejetés ; correspondances fournisseurs, clients, comptes et localisations validées ; traitement des avoirs/corrections ; formats de date ; modalités d’export GlobalBake ; documentation des accès et capacités d’import R365, avec un environnement de test.
 

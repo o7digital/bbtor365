@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#30372e">
+<title>Sign in · GBtoR365 · Artimex</title>
+<link rel="icon" href="/assets/favicon.svg"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/login.css">
+</head>
+<body class="login-page">
+<main class="login-layout">
+  <section class="login-intro">
+    <img class="login-logo" src="/assets/artimex-logo.webp" alt="Artimex Artisan Mexican Bakery">
+    <div><div class="eyebrow">ARTIMEX / GBtoR365</div><h1 data-text="headline">Your accounting,<br>in sync.</h1><p data-text="intro">A clear path from GlobalBake to Restaurant365.</p></div>
+    <span class="login-route">GlobalBake <span aria-hidden="true">→</span> GBtoR365 <span aria-hidden="true">→</span> R365</span>
+  </section>
+  <section class="login-panel">
+    <button id="language" class="language login-language" aria-label="Switch to Spanish">EN / ES</button>
+    <div class="eyebrow" data-text="workspace">FINANCE WORKSPACE</div>
+    <h2 data-text="welcome">Welcome back.</h2>
+    <p class="login-description" data-text="description">Sign in to your Artimex workspace.</p>
+    <form id="login-form">
+      <label class="form-field"><span data-text="email">Email address</span><input id="email" name="email" type="email" autocomplete="username" maxlength="254" required></label>
+      <label class="form-field"><span data-text="password">Password</span><span class="password-field"><input id="password" name="password" type="password" autocomplete="current-password" maxlength="256" required><button id="show-password" type="button" aria-label="Show password" aria-pressed="false" data-text="show">Show</button></span></label>
+      <p id="login-error" class="error-box hide" role="alert"></p>
+      <button id="sign-in" class="btn primary full" type="submit" data-text="submit">Sign in</button>
+    </form>
+    <p class="login-help" data-text="help">Access is reserved for authorized Artimex users. Contact your administrator if you need access.</p>
+    <div class="login-note" data-text="note">Accounting preview · No entries are sent to GlobalBake or R365.</div>
+    <noscript>JavaScript is required to sign in. / Se requiere JavaScript para iniciar sesión.</noscript>
+  </section>
+</main>
+<script src="/assets/login.js"></script>
+</body>
+</html>
